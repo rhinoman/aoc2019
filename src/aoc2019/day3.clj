@@ -52,7 +52,15 @@
       (str/split #",")
       (wire-coords)))
 
-(def test-wire2)
+(def test-wire3
+  (-> "R75,D30,R83,U83,L12,D49,R71,U7,L72"
+      (str/split #",")
+      (wire-coords)))
+
+(def test-wire4
+  (-> "U62,R66,U55,R34,D71,R55,D58,R83"
+      (str/split #",")
+      (wire-coords)))
 
 (defn common-points
   [w1 w2]
@@ -70,4 +78,43 @@
 (defn solve-part-1 []
   (min-distance wire1 wire2))
 
+(defn get-cpd [p cpv]
+  (loop [cur cpv]
+    (cond
+      (= (get (first cur) 0) p)
+        (first cur)
+      (nil? (first cur)) nil
+      :else (recur (rest cur)))))
 
+(defn add-distances [wire cpv]
+  (keep-indexed
+   (fn [idx c]
+     (if-let [cp (get-cpd c cpv)]
+       (let [d (get cp 1)
+             nd (+ d idx)
+             nv [(get cp 0) nd]]
+         nv)
+       nil))
+   wire))
+
+(defn to-cpv [w1 w2]
+  (map (fn [p] [p 0]) (common-points w1 w2)))
+
+(defn compute-runs [w1 w2]
+  (let [cpv (to-cpv w1 w2)]
+    (add-distances w2 (add-distances w1 cpv))))
+
+(defn min-intersect-run [w1 w2]
+  (let [common-runl (compute-runs w1 w2)
+        first-dist (get (first common-runl) 1)]
+    (reduce
+     (fn [acc b]
+       (let [d (get b 1)]
+         (if (< d acc)
+           d
+           acc)))
+     first-dist
+     common-runl)))
+
+(defn solve-part-2 []
+  (min-intersect-run wire1 wire2))
