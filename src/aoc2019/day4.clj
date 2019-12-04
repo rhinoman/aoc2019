@@ -9,7 +9,7 @@
 
 (def sp (range 156218 652528))
 
-(defn is-solution? [^String xstr]
+(defn is-solution? [xstr]
   (loop [xs (num-to-digits xstr)
          has-dbl false
          is-inc true]
