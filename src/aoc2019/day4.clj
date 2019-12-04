@@ -1,16 +1,23 @@
 (ns aoc2019.day4)
 
-(def sp (map str (range 156218 652528)))
+(defn num-to-digits
+  [num]
+  (loop [n num res []]
+    (if (zero? n)
+      res
+      (recur (quot n 10) (cons (mod n 10) res)))))
+
+(def sp (range 156218 652528))
 
 (defn is-solution? [^String xstr]
-  (loop [xs xstr
+  (loop [xs (num-to-digits xstr)
          has-dbl false
          is-inc true]
     (let [cur (first xs)
           nx (second xs)]
       (cond
         (nil? nx) (and is-inc has-dbl)
-        (< (Character/digit nx 10) (Character/digit cur 10)) false
+        (< nx cur) false
         :else (recur (rest xs) (or has-dbl (= nx cur)) is-inc)))))
 
 (defn solve-part-1 []
@@ -26,7 +33,7 @@
   (> (count (filter (fn [x] (= 2 (get x 1))) runs)) 0))
 
 (defn is-solution-2? [xstr]
-  (loop [xs xstr
+  (loop [xs (num-to-digits xstr)
          runs {}
          prev nil
          is-inc true]
@@ -34,7 +41,7 @@
           nx (second xs)]
       (cond
         (nil? nx) (and is-inc (eval-runs runs))
-        (< (Character/digit nx 10) (Character/digit cur 10)) false
+        (< nx cur) false
         :else (recur
                (rest xs)
                (add-run cur nx prev runs)
