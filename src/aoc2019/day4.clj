@@ -1,22 +1,20 @@
 (ns aoc2019.day4)
 
-(def sp (range 156218 652528))
+(def sp (map str (range 156218 652528)))
 
-(defn is-solution? [x]
-  (let [xstr (str x)]
-    (loop [xs xstr
-           has-dbl false
-           is-inc true]
-      (let [cur (first xs)
-            nx (second xs)]
-        (cond
-          (nil? nx) (and is-inc has-dbl)
-          (< (Character/digit nx 10) (Character/digit cur 10)) false
-          :else (recur (rest xs) (or has-dbl (= nx cur)) is-inc))))))
+(defn is-solution? [^String xstr]
+  (loop [xs xstr
+         has-dbl false
+         is-inc true]
+    (let [cur (first xs)
+          nx (second xs)]
+      (cond
+        (nil? nx) (and is-inc has-dbl)
+        (< (Character/digit nx 10) (Character/digit cur 10)) false
+        :else (recur (rest xs) (or has-dbl (= nx cur)) is-inc)))))
 
 (defn solve-part-1 []
-  (let [solutions (keep (fn [x] (if (is-solution? x) x nil)) sp)]
-    (count solutions)))
+  (reduce (fn [acc b] (if (is-solution? b) (inc acc) acc)) 0 sp))
 
 (defn add-run [x nx prev runs]
   (cond
@@ -27,23 +25,21 @@
 (defn eval-runs [runs]
   (> (count (filter (fn [x] (= 2 (get x 1))) runs)) 0))
 
-(defn is-solution-2? [x]
-  (let [xstr (str x)]
-    (loop [xs xstr
-           runs {}
-           prev nil
-           is-inc true]
-      (let [cur (first xs)
-            nx (second xs)]
-        (cond
-          (nil? nx) (and is-inc (eval-runs runs))
-          (< (Character/digit nx 10) (Character/digit cur 10)) false
-          :else (recur
-                 (rest xs)
-                 (add-run cur nx prev runs)
-                 cur
-                 is-inc))))))
+(defn is-solution-2? [xstr]
+  (loop [xs xstr
+         runs {}
+         prev nil
+         is-inc true]
+    (let [cur (first xs)
+          nx (second xs)]
+      (cond
+        (nil? nx) (and is-inc (eval-runs runs))
+        (< (Character/digit nx 10) (Character/digit cur 10)) false
+        :else (recur
+               (rest xs)
+               (add-run cur nx prev runs)
+               cur
+               is-inc)))))
 
 (defn solve-part-2 []
-  (let [solutions (keep (fn [x] (if (is-solution-2? x) x nil)) sp)]
-    (count solutions)))
+  (reduce (fn [acc b] (if (is-solution-2? b) (inc acc) acc)) 0 sp))
