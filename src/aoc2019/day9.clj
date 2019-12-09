@@ -44,8 +44,12 @@
         yv (cond
              (= (:mode2 op) 0) (geti mem y)
              (= (:mode2 op) 1) y
-             (= (:mode2 op) 2) (geti mem (+ y @rbase)))]
-    {:x xv :y yv :ap ap}))
+             (= (:mode2 op) 2) (geti mem (+ y @rbase)))
+        apv (cond
+              (= (:mode3 op) 0) ap
+              (= (:mode3 op) 1) ap
+              (= (:mode3 op) 2) (+ ap @rbase))]
+    {:x xv :y yv :ap apv}))
 
 (defn get-jmp-params [op ptr mem]
   (let [x (geti mem (+ ptr 1))
@@ -77,8 +81,15 @@
 
 (defn ex-sto [op ptr mem]
   (let [x @pi-val
-        ap (geti mem (+ ptr 1))]
-    (assoc mem ap (str x))))
+        ap (cond
+             (< (:mode1 op) 2) (geti mem (+ ptr 1))
+             :else (+ (geti mem (+ ptr 1)) @rbase))
+        result (assoc mem ap (str x))]
+    (println (get mem (+ ptr 1)))
+    (println (str "RBASE" @rbase))
+    (println (str "AP" ap))
+    (println (get result ap))
+    result))
 
 (defn ex-out [op ptr mem]
    (let [xv (get-param op ptr mem)]
@@ -136,7 +147,7 @@
 (defn read-program [prog sp]
   (reset! rbase 0)
   (loop [ptr sp
-         mem (into [] (concat prog (map str (take 100 (cycle "0")))))]
+         mem (into [] (concat prog (map str (take 9999 (cycle "0")))))]
     (let [this-op (parse-op (get mem ptr))]
       (cond
         (= (:opcode this-op) 99)
