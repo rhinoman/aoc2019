@@ -108,12 +108,11 @@
 
 (defn ex-arb [op ptr mem]
   (let [param (get-param op ptr mem)]
-    (reset! rbase param)
+    (reset! rbase (+ @rbase param))
     mem))
 
 (defn eval-op [op ptr mem]
   (try
-    (println (str "ptr: " ptr))
     (cond
       (= (:opcode op) 1) {:result (ex-add op ptr mem) :ptr (+ ptr 4)}
       (= (:opcode op) 2) {:result (ex-mul op ptr mem) :ptr (+ ptr 4)}
@@ -135,12 +134,13 @@
       (print (str "FULL MEM:" mem)))))
 
 (defn read-program [prog sp]
+  (reset! rbase 0)
   (loop [ptr sp
          mem (into [] (concat prog (map str (take 100 (cycle "0")))))]
     (let [this-op (parse-op (get mem ptr))]
       (cond
         (= (:opcode this-op) 99)
-          {:signal "HALT" :mem mem :ptr ptr}
+          {:signal "HALT" :mem (take 5 mem) :ptr ptr}
         ;; (= (:opcode this-op) 4)
         ;;   (let [result (eval-op this-op ptr mem)]
         ;;     {:signal "OUTPUT" :mem (:result result) :ptr (:ptr result)})
